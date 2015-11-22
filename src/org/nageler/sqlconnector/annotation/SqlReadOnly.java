@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * use this annotation to exclude this field from insert statements
+ * 
  * @author Marcel Nageler &lt;coding@nageler.org&gt;
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

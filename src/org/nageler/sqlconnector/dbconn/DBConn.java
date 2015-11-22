@@ -20,6 +20,13 @@ import org.nageler.sqlconnector.annotation.SqlTable;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
+/**
+ * This class provides a way of writing/reading simple Objects to/from SQL databases.
+ * The object must have the @{@link SqlTable} annotation, the fields of the object must be <code>public</code> and
+ * have the @{@link SqlField} annotation
+ * 
+ * @author Marcel Nageler &lt;coding@nageler.org&gt;
+ */
 @Log
 public class DBConn {
 	Connection conn;
@@ -31,10 +38,24 @@ public class DBConn {
 		this.conn = conn;
 	}
 	
+	/**
+	 * select all representatives of a class from the database
+	 * @param clazz - the class to be selected
+	 * @return a List containing the result
+	 * @throws SQLException - in case of mismatch of the column names or types
+	 */
 	public <T> List<T> selectAll(Class<T> clazz) throws SQLException {
 		return select(clazz, "");
 	}
 	
+	/**
+	 * select representatives of a class from the database, using standart SQL syntax.
+	 * @param clazz - the class to be selected
+	 * @param sqlSuffix - the SQL command to be added for example <code>"WHERE id = ?"</code>
+	 * @param parameters - the parameters for the sqlSuffix above. In the example above this would be the id.
+	 * @return a List containing the result
+	 * @throws SQLException - in case of mismatch of the column names or types
+	 */
 	public <T> List<T> select(Class<T> clazz, @NonNull String sqlSuffix, Object... parameters) throws SQLException {
 		PreparedStatement stm = getSelectStatement(clazz, sqlSuffix);
 		{
@@ -71,6 +92,12 @@ public class DBConn {
 		return result;
 	}
 
+	/**
+	 * write object to database
+	 * @param t - the object to be written
+	 * @throws IllegalArgumentException - in case the fields cannot be accessed
+	 * @throws SQLException - in case of mismatch of the column names or types
+	 */
 	public <T> void write(@NonNull T t) throws IllegalArgumentException, SQLException {
 		Class<?> clazz = t.getClass();
 		
