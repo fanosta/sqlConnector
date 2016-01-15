@@ -28,11 +28,13 @@ import lombok.extern.java.Log;
  * @author Marcel Nageler &lt;coding@nageler.org&gt;
  */
 @Log
-public class DBConn {
+public class DBConn implements AutoCloseable {
 	Connection conn;
 
 	Map<Class<?>, PreparedStatement> insertStatements = new HashMap<>();
 	Map<Class<?>, Map<String, PreparedStatement>> selectStatements = new HashMap<>();
+	
+	Map<Class<?>, Field> primaryKeys = new HashMap<>();
 	
 	public DBConn(@NonNull Connection conn) {
 		this.conn = conn;
@@ -46,6 +48,27 @@ public class DBConn {
 	 */
 	public <T> List<T> selectAll(Class<T> clazz) throws SQLException {
 		return select(clazz, "");
+	}
+	
+	/**
+	 * select representative with matching id from database. <code>SELECT * FROM table WHERE id = ?</code>
+	 * @param clazz - the class of the target
+	 * @param id - the id of the target
+	 * @return the element or <code>null</code> if no match found
+	 * @throws SQLException - in case of mismatch of the column names or types
+	 * @throws IllegalArgumentException - in case of database returning multiple rows
+	 */
+	public <T> T selectById(Class<T> clazz, int id) throws SQLException {
+		List<T> results = select(clazz, "WHERE id = ?", id);
+		switch (results.size()) {
+		case 1:
+			return results.get(0);
+		case 0:
+			return null;
+		default:
+			assert results.size() > 2;
+			throw new IllegalArgumentException(String.format("multiple (%d) instances of %s with id = ", results.size(), clazz.getName()));
+		}
 	}
 	
 	/**
@@ -116,6 +139,10 @@ public class DBConn {
 		}
 		
 		stm.executeUpdate();
+	}
+	
+	public void close() throws SQLException {
+		conn.close();
 	}
 
 	private PreparedStatement getInsertStatement(Class<?> clazz) throws SQLException {
