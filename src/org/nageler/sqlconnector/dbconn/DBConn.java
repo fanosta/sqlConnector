@@ -88,8 +88,6 @@ public class DBConn implements AutoCloseable {
 			}
 		}
 		
-		log.finer(stm.toString());
-		
 		ResultSet rs = stm.executeQuery();
 		List<T> result = new LinkedList<>();
 		List<Field> fields = getSqlFields(clazz);
@@ -179,8 +177,6 @@ public class DBConn implements AutoCloseable {
 			stms = new HashMap<>();
 			selectStatements.put(clazz, stms);
 		}
-		
-		log.fine(String.format("creating statement for %s (\"%s\")", clazz, sqlSuffix));
 		
 		List<Field> fields = getSqlFields(clazz);
 		
